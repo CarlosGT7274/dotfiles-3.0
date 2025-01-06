@@ -31,8 +31,8 @@ alt + F1
 	KeybindingsHelp
 
 # Theme Selector
-alt + @space
-	RiceSelector
+# alt + @space
+# 	RiceSelector
 
 # jgmenu
 ~button3
@@ -79,8 +79,22 @@ XF86MonBrightness{Up,Down}
     sh Brightness {up,down}
 
 # Volume control
-XF86Audio{RaiseVolume,LowerVolume,Mute}
-	Volume{ --inc, --dec, --toggle}
+# XF86Audio{RaiseVolume,LowerVolume,Mute}
+# 	Volume{ --inc, --dec, --toggle}
+
+# Subir volumen
+XF86AudioRaiseVolume
+    Volume --inc
+
+# Bajar volumen
+XF86AudioLowerVolume
+    Volume --dec
+
+# Silenciar / Activar sonido
+XF86AudioMute
+    Volume --toggle
+
+
 
 # Music Control
 XF86Audio{Next,Prev,Play,Stop}
