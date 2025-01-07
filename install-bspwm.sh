@@ -6,15 +6,15 @@ sudo pacman -S --needed $(cat programs.txt)
 
 git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
 
-yay -S eww udisks2 udiskie
+dependencias=(base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq \
+            jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib \
+            papirus-icon-theme physlock picom playerctl polybar polkit-gnome python-gobject ranger \
+            redshift rofi rustup sxhkd tmux ttf-inconsolata ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
+            ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs \
+            xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot \
+            xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting \
+            zsh-completions zinit fzf reflector eww udisks2 udiskie)
 
-dependencias=(base-devel brightnessctl bspwm dunst feh firefox geany git kitty imagemagick jq \
-			        jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib \
-			        papirus-icon-theme physlock picom playerctl polybar polkit-gnome python-gobject ranger \
-			        redshift rofi rustup sxhkd tmux ttf-inconsolata ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
-			        ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs \
-			        xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot \
-			        xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting)
 
 is_installed() {
     pacman -Q "$1" &> /dev/null
@@ -23,7 +23,7 @@ is_installed() {
 printf "%s%sChecking for required packages...%s\n" "${BLD}" "${CBL}" "${CNC}"
 for paquete in "${dependencias[@]}"; do
     if ! is_installed "$paquete"; then
-        if sudo pacman -S "$paquete" --noconfirm >/dev/null 2>> RiceError.log; then
+        if sudo yay -S "$paquete" --noconfirm >/dev/null 2>> RiceError.log; then
             printf "%s%s%s %shas been installed succesfully.%s\n" "${BLD}" "${CYE}" "$paquete" "${CBL}" "${CNC}"
             sleep 1
         else
@@ -44,7 +44,7 @@ mkdir -p ~/.config/configs_backups/
 rm -rf ~/.local/share/nvim/
 rm -rf ~/.cache/nvim/
 rm -rf ~/.local/state/nvim/
-mv ~/.config/kitty{,} ~/.config/configs_backups/ 
+mv ~/.config/alacritty{,} ~/.config/configs_backups/ 
 mv ~/.config/bpytop{,} ~/.config/configs_backups/ 
 mv ~/.config/bspwm{,} ~/.config/configs_backups/ 
 mv ~/.config/copyq{,} ~/.config/configs_backups/ 
@@ -81,9 +81,7 @@ tar -xf themes.tar.gz
 mv -f .themes/* ~/.themes/
 
 # Set Wallpapers
-#tar -xf Wallpapers.tar.gz && cp -r Wallpapers/ "$(xdg-user-dir PICTURES)"
 mkdir -p "$(xdg-user-dir PICTURES)"/Wallpapers
-#mv -f Wallpapers/* "$(xdg-user-dir PICTURES)"/Wallpapers/
 cp -r Wallpapers/* "$(xdg-user-dir PICTURES)"/Wallpapers/
 
 # Scripts for change theme
@@ -110,7 +108,6 @@ pip install pywal --break-system-packages
 # Download Pywalfox
 pip install pywalfox --break-system-packages
 pywalfox install
-#Download https://addons.mozilla.org/en-US/firefox/addon/pywalfox/
 
 # nitrogen-pywal execute
 ln -s ~/.config/bspwm/nitrogen-pywal.sh ~/.local/bin/nitrogen-pywal.sh
@@ -119,24 +116,14 @@ ln -s ~/.config/bspwm/nitrogen-pywal.sh ~/.local/bin/nitrogen-pywal.sh
 echo '' >> ~/.bashrc
 echo 'export VISUAL="${EDITOR}"' >> ~/.bashrc
 echo 'export EDITOR="xed"' >> ~/.bashrc
-echo 'export TERM="kitty"' >> ~/.bashrc
-echo 'export TERMINAL="kitty"' >> ~/.bashrc
+echo 'export TERM="alacritty"' >> ~/.bashrc
+echo 'export TERMINAL="alacritty"' >> ~/.bashrc
 echo 'export BROWSER="firefox"' >> ~/.bashrc
 echo 'export HISTORY_IGNORE="(ls|cd|pwd|exit|sudo reboot|history|cd -|cd ..)"' >> ~/.bashrc
 echo '' >> ~/.bashrc
 echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-echo 'source $HOME/.aliases' >> ~/.bashrc
 
-echo '' >> ~/.zshrc
-echo 'export VISUAL="${EDITOR}"' >> ~/.zshrc
-echo 'export EDITOR="xed"' >> ~/.zshrc
-echo 'export TERM="kitty"' >> ~/.zshrc
-echo 'export TERMINAL="kitty"' >> ~/.zshrc
-echo 'export BROWSER="firefox"' >> ~/.zshrc
-echo 'export HISTORY_IGNORE="(ls|cd|pwd|exit|sudo reboot|history|cd -|cd ..)"' >> ~/.zshrc
-echo '' >> ~/.zshrc
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-echo 'source $HOME/.aliases' >> ~/.zshrc
+cp .zshrc ~/
 
 sleep 1
 source ~/.bashrc
@@ -176,17 +163,14 @@ sudo chmod 0777 /lib/systemd/system/ly.service
 systemctl enable ly.service
 
 # Set terminal default in Gnome and Cinnamon
-gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/kitty
-gsettings set org.cinnamon.desktop.default-applications.terminal exec /usr/bin/kitty
+gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/alacritty
+gsettings set org.cinnamon.desktop.default-applications.terminal exec /usr/bin/alacritty
 
 # Volume initialize in 100%
 pactl set-sink-volume @DEFAULT_SINK@ 100%
 
 # Set colors all
 ~/.GTK-configs/Nord.sh
-
-# neovim
-#nvim -c ':call coc#util#install()' -c ':q'
 
 # detects Dual Boot in grub
 echo "GRUB_DISABLE_OS_PROBER=false" | sudo tee -a /etc/default/grub
@@ -197,22 +181,5 @@ sudo grub-mkconfig -o /boot/grub/grub.cfg
 # visudo: no editor found (editor path = /usr/bin/vi)
 sudo ln -s $(which nvim) /usr/bin/vi
 
-# emacs
-#cp -f emacs-config/init.el ~/.emacs.d/
-
 # wallpapers dir for nitrogen
 echo "dirs=/home/$(whoami)/Imágenes/Wallpapers;" >> ~/.config/nitrogen/nitrogen.cfg
-
-# mpd volume
-#mpc volume 75
-
-# tmux config
-#sudo pacman -S --needed tmux
-#cp tmux.conf ~/.tmux.conf
-#tmux source-file ~/.tmux.conf
-
-# gnome Screnshot (alternative to flameshot)
-#sudo pacman -S gnome-screenshot
-# Note:
-# GNOME screnshot shortcut for sxhkd:
-# gnome-screenshot -acf /tmp/test && cat /tmp/test | xclip -i -selection clipboard -target image/png
