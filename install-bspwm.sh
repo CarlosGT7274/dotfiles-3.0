@@ -114,6 +114,7 @@ setup_configs() {
     mv -f .themes/* "$HOME"/.themes/
     
     # Setup wallpapers
+    mkdir -p "$HOME/Imágenes/Wallpapers"
     cp -r Wallpapers/* "$HOME/Imágenes/Wallpapers/"
     
     # Copy GTK configs
