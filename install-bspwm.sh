@@ -1,185 +1,249 @@
-dir_actual=$(pwd)
+#!/usr/bin/env bash
 
-# Download programs
-sudo pacman -S noto-fonts git
-sudo pacman -S --needed $(cat programs.txt)
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
 
-git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+# Get current directory
+CURRENT_DIR=$(pwd)
 
-dependencias=(base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq \
-            jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib \
-            papirus-icon-theme physlock picom playerctl polybar polkit-gnome python-gobject ranger \
-            redshift rofi rustup sxhkd tmux ttf-inconsolata ttf-jetbrains-mono ttf-jetbrains-mono-nerd \
-            ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs \
-            xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot \
-            xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting \
-            zsh-completions zinit fzf reflector eww udisks2 udiskie)
+# Print colored message function
+print_message() {
+    echo -e "${2}===> ${1}${NC}"
+}
 
-
+# Check if package is installed
 is_installed() {
     pacman -Q "$1" &> /dev/null
 }
 
-printf "%s%sChecking for required packages...%s\n" "${BLD}" "${CBL}" "${CNC}"
-for paquete in "${dependencias[@]}"; do
-    if ! is_installed "$paquete"; then
-        if sudo yay -S "$paquete" --noconfirm >/dev/null 2>> RiceError.log; then
-            printf "%s%s%s %shas been installed succesfully.%s\n" "${BLD}" "${CYE}" "$paquete" "${CBL}" "${CNC}"
+# Install base dependencies
+install_base() {
+    print_message "Installing base packages..." "${BLUE}"
+    sudo pacman -S --needed --noconfirm base-devel git noto-fonts
+    
+    # Install yay if not present
+    if ! command -v yay &> /dev/null; then
+        print_message "Installing yay..." "${YELLOW}"
+        git clone https://aur.archlinux.org/yay.git
+        cd yay || exit
+        makepkg -si --noconfirm
+        cd "$CURRENT_DIR" || exit
+        rm -rf yay
+    fi
+}
+
+# Main dependencies (actualizadas según tu script original)
+DEPENDENCIES=(
+    base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq 
+    jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib 
+    papirus-icon-theme physlock picom playerctl polybar polkit-gnome python-gobject ranger 
+    redshift rofi rustup sxhkd tmux ttf-inconsolata ttf-jetbrains-mono ttf-jetbrains-mono-nerd 
+    ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs 
+    xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot 
+    xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting 
+    zsh-completions zinit fzf reflector eww udisks2 udiskie
+)
+
+# Install all dependencies
+install_dependencies() {
+    print_message "Installing dependencies..." "${BLUE}"
+    for pkg in "${DEPENDENCIES[@]}"; do
+        if ! is_installed "$pkg"; then
+            print_message "Installing $pkg" "${YELLOW}"
+            yay -S --noconfirm "$pkg" 2>> RiceError.log || print_message "Failed to install $pkg. Check RiceError.log" "${RED}"
             sleep 1
         else
-            printf "%s%s%s %shas not been installed correctly. See %sRiceError.log %sfor more details.%s\n" "${BLD}" "${CYE}" "$paquete" "${CRE}" "${CBL}" "${CRE}" "${CNC}"
+            print_message "$pkg already installed" "${GREEN}"
             sleep 1
         fi
-    else
-        printf '%s%s%s %sis already installed on your system!%s\n' "${BLD}" "${CYE}" "$paquete" "${CGR}" "${CNC}"
-        sleep 1
-    fi
-done
+    done
+}
 
-# Generate directories
-xdg-user-dirs-update
+# Backup existing configs
+backup_configs() {
+    print_message "Backing up existing configurations..." "${BLUE}"
+    
+    # Limpiar directorios de nvim
+    rm -rf ~/.local/share/nvim/
+    rm -rf ~/.cache/nvim/
+    rm -rf ~/.local/state/nvim/
+    
+    # Backup
+    mkdir -p ~/.config/configs_backups/
+    
+    CONFIGS=(
+        alacritty bpytop bspwm copyq dunst flameshot gtk-2.0 gtk-3.0
+        mpd ncmpcpp neofetch nitrogen nvim polybar qt5ct qt6ct
+        rofi sxhkd wal
+    )
+    
+    for config in "${CONFIGS[@]}"; do
+        if [ -d "$HOME/.config/$config" ]; then
+            mv "$HOME/.config/$config" "$HOME/.config/configs_backups/"
+        fi
+    done
+}
 
-# Backup Config directories
-mkdir -p ~/.config/configs_backups/
-rm -rf ~/.local/share/nvim/
-rm -rf ~/.cache/nvim/
-rm -rf ~/.local/state/nvim/
-mv ~/.config/alacritty{,} ~/.config/configs_backups/ 
-mv ~/.config/bpytop{,} ~/.config/configs_backups/ 
-mv ~/.config/bspwm{,} ~/.config/configs_backups/ 
-mv ~/.config/copyq{,} ~/.config/configs_backups/ 
-mv ~/.config/dunst{,} ~/.config/configs_backups/ 
-mv ~/.config/flameshot{,} ~/.config/configs_backups/ 
-mv ~/.config/gtk-2.0{,} ~/.config/configs_backups/ 
-mv ~/.config/gtk-3.0{,} ~/.config/configs_backups/ 
-mv ~/.config/mpd{,} ~/.config/configs_backups/ 
-mv ~/.config/ncmpcpp{,} ~/.config/configs_backups/ 
-mv ~/.config/neofetch{,} ~/.config/configs_backups/ 
-mv ~/.config/nitrogen{,} ~/.config/configs_backups/ 
-mv ~/.config/nvim{,} ~/.config/configs_backups/ 
-mv ~/.config/polybar{,} ~/.config/configs_backups/ 
-mv ~/.config/qt5ct{,} ~/.config/configs_backups/ 
-mv ~/.config/qt6ct{,} ~/.config/configs_backups/ 
-mv ~/.config/rofi{,} ~/.config/configs_backups/ 
-mv ~/.config/sxhkd{,} ~/.config/configs_backups/ 
-mv ~/.config/wal{,} ~/.config/configs_backups/
+# Setup directories and copy configs
+setup_configs() {
+    print_message "Setting up new configurations..." "${BLUE}"
+    
+    # Create necessary directories
+    mkdir -p \
+        "$HOME"/.config \
+        "$HOME"/.cache \
+        "$HOME"/.fonts \
+        "$HOME"/.icons \
+        "$HOME"/.themes \
+        "$HOME"/.GTK-configs
 
-# Create directories
-mkdir -p ~/.config/ && cp -r config/* ~/.config/
-mkdir -p ~/.cache/ && cp -r cache/* ~/.cache/
-mkdir -p ~/.fonts/
-mkdir -p ~/.icons/
-mkdir -p ~/.themes/
-mkdir -p ~/.GTK-configs/
+    # Copy configurations
+    cp -r config/* "$HOME"/.config/
+    cp -r cache/* "$HOME"/.cache/
+    
+    # Extract and setup themes/icons
+    tar -xf icons.tar.gz
+    mv -f .icons/* "$HOME"/.icons/
+    
+    tar -xf themes.tar.gz
+    mv -f .themes/* "$HOME"/.themes/
+    
+    # Setup wallpapers
+    mkdir -p "$(xdg-user-dir PICTURES)"/Wallpapers
+    cp -r Wallpapers/* "$(xdg-user-dir PICTURES)"/Wallpapers/
+    
+    # Copy GTK configs
+    cp -r GTK-configs/* "$HOME"/.GTK-configs/
+    cp xsettingsd "$HOME"/.xsettingsd
+    cp gtkrc-2.0 "$HOME"/.gtkrc-2.0
+    
+    # Copy aliases
+    cp aliases "$HOME"/.aliases
+}
 
-# Set Icons
-tar -xf icons.tar.gz
-mv -f .icons/* ~/.icons/
+# Setup Telegram theme
+setup_telegram() {
+    print_message "Setting up Telegram theme..." "${BLUE}"
+    cd "$HOME" || exit
+    git clone https://codeberg.org/thirtysixpw/walogram
+    cp "$CURRENT_DIR/constantsTelegram.tdesktop-theme" "$HOME/walogram/constants.tdesktop-theme"
+    cd walogram || exit
+    sudo make install
+    cd "$CURRENT_DIR" || exit
+}
 
-# Set Themes
-tar -xf themes.tar.gz
-mv -f .themes/* ~/.themes/
+# Setup Pywal and related
+setup_pywal() {
+    print_message "Setting up Pywal and related tools..." "${BLUE}"
+    
+    # Install Pywal and related
+    pip install PyGObject pywal pywalfox --break-system-packages
+    pywalfox install
+    
+    # Setup nitrogen-pywal
+    ln -s "$HOME/.config/bspwm/nitrogen-pywal.sh" "$HOME/.local/bin/nitrogen-pywal.sh"
+    
+    # Setup bpytop theme
+    mkdir -p "$HOME/.config/bpytop/themes/"
+    ln -s "$HOME/.cache/wal/bpytopPywal.theme" "$HOME/.config/bpytop/themes/bpytopPywal.theme"
+    
+    # Setup dunst theme
+    mkdir -p "$HOME/.config/dunst/"
+    ln -s "$HOME/.cache/wal/dunstrc" "$HOME/.config/dunst/dunstrc"
+    wal --theme Dracula
+}
 
-# Set Wallpapers
-mkdir -p "$(xdg-user-dir PICTURES)"/Wallpapers
-cp -r Wallpapers/* "$(xdg-user-dir PICTURES)"/Wallpapers/
+# Setup environment
+setup_environment() {
+    print_message "Setting up environment..." "${BLUE}"
+    
+    # Add to bashrc
+    {
+        echo
+        echo 'export VISUAL="${EDITOR}"'
+        echo 'export EDITOR="xed"'
+        echo 'export TERM="alacritty"'
+        echo 'export TERMINAL="alacritty"'
+        echo 'export BROWSER="firefox"'
+        echo 'export HISTORY_IGNORE="(ls|cd|pwd|exit|sudo reboot|history|cd -|cd ..)"'
+        echo
+        echo 'export PATH="$HOME/.local/bin:$PATH"'
+    } >> "$HOME/.bashrc"
+    
+    # Copy zshrc
+    cp .zshrc "$HOME/"
+    
+    # Environment variables
+    echo '_JAVA_AWT_WM_NONREPARENTING=1' | sudo tee -a /etc/environment
+    echo 'QT_QPA_PLATFORMTHEME=qt5ct' | sudo tee -a /etc/environment
+    
+    # Setup GRUB for dual boot
+    echo "GRUB_DISABLE_OS_PROBER=false" | sudo tee -a /etc/default/grub
+    sudo grub-mkconfig -o /boot/grub/grub.cfg
+    
+    # Fix for visudo
+    sudo ln -s "$(which nvim)" /usr/bin/vi
+}
 
-# Scripts for change theme
-cp -r GTK-configs/* ~/.GTK-configs/
+# Final configurations
+final_setup() {
+    print_message "Performing final configurations..." "${BLUE}"
+    
+    # Set permissions
+    chmod +x "$HOME"/.config/bspwm/bspwmrc
+    chmod +x "$HOME"/.config/bspwm/*.sh
+    chmod +x "$HOME"/.config/polybar/*.sh
+    chmod -R +x "$HOME"/.GTK-configs/*.sh
+    
+    # Install Qt plugins
+    cd "$HOME" || exit
+    git clone https://aur.archlinux.org/qt5-styleplugins.git
+    cd qt5-styleplugins || exit
+    makepkg -si --noconfirm
+    cd "$HOME" || exit
+    git clone https://aur.archlinux.org/qt6gtk2.git
+    cd qt6gtk2 || exit
+    makepkg -si --noconfirm
+    cd "$CURRENT_DIR" || exit
+    
+    # Setup display manager
+    sudo chmod 0777 /lib/systemd/system/ly.service
+    systemctl enable ly.service
+    
+    # Set terminal defaults
+    gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/alacritty
+    gsettings set org.cinnamon.desktop.default-applications.terminal exec /usr/bin/alacritty
+    
+    # Set volume
+    pactl set-sink-volume @DEFAULT_SINK@ 100%
+    
+    # Set theme
+    "$HOME"/.GTK-configs/Nord.sh
+    
+    # Setup nitrogen
+    echo "dirs=/home/$(whoami)/Imágenes/Wallpapers;" >> "$HOME"/.config/nitrogen/nitrogen.cfg
+    
+    print_message "Installation completed!" "${GREEN}"
+    print_message "Please logout and login to your new environment" "${YELLOW}"
+}
 
-# .xsettingsd config
-cp xsettingsd ~/.xsettingsd
+# Main installation function
+main() {
+    print_message "Starting installation..." "${BLUE}"
+    
+    install_base
+    install_dependencies
+    backup_configs
+    setup_configs
+    setup_telegram
+    setup_pywal
+    setup_environment
+    final_setup
+}
 
-# .gtkrc-2.0 config
-cp gtkrc-2.0 ~/.gtkrc-2.0
-
-# wal --set
-cp aliases ~/.aliases
-
-# Walogram (Telegram theme)
-cd ~/ && git clone https://codeberg.org/thirtysixpw/walogram
-cp "$dir_actual/constantsTelegram.tdesktop-theme" ~/walogram/constants.tdesktop-theme
-cd ~/walogram/ && sudo make install
-
-# Download Pywal
-pip install PyGObject --break-system-packages
-pip install pywal --break-system-packages
-
-# Download Pywalfox
-pip install pywalfox --break-system-packages
-pywalfox install
-
-# nitrogen-pywal execute
-ln -s ~/.config/bspwm/nitrogen-pywal.sh ~/.local/bin/nitrogen-pywal.sh
-
-# Path
-echo '' >> ~/.bashrc
-echo 'export VISUAL="${EDITOR}"' >> ~/.bashrc
-echo 'export EDITOR="xed"' >> ~/.bashrc
-echo 'export TERM="alacritty"' >> ~/.bashrc
-echo 'export TERMINAL="alacritty"' >> ~/.bashrc
-echo 'export BROWSER="firefox"' >> ~/.bashrc
-echo 'export HISTORY_IGNORE="(ls|cd|pwd|exit|sudo reboot|history|cd -|cd ..)"' >> ~/.bashrc
-echo '' >> ~/.bashrc
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-
-cp .zshrc ~/
-
-sleep 1
-source ~/.bashrc
-source ~/.zshrc
-
-# bpytop theme (symbolic link)
-mkdir -p ~/.config/bpytop/themes/ && ln -s ~/.cache/wal/bpytopPywal.theme ~/.config/bpytop/themes/bpytopPywal.theme
-
-# dunst theme (symbolic link)
-mkdir -p ~/.config/dunst/ && ln -s ~/.cache/wal/dunstrc ~/.config/dunst/dunstrc
-wal --theme Dracula
-
-# Oomox install (themes GTK generator)
-cd ~/ && git clone https://github.com/themix-project/oomox.git --recursive
-cd ~/oomox && make -f po.mk install
-mv ~/oomox/ ~/.oomox
-
-# Execution permissions
-chmod +x ~/.config/bspwm/bspwmrc
-chmod +x ~/.config/bspwm/*.sh
-chmod +x ~/.config/polybar/*.sh
-chmod -R +x ~/.GTK-configs/*.sh
-
-# GTK y qt
-cd ~/ && git clone https://aur.archlinux.org/qt5-styleplugins.git && cd ~/qt5-styleplugins && makepkg -si
-cd ~/ && git clone https://aur.archlinux.org/qt6gtk2.git && cd ~/qt6gtk2 && makepkg -si
-
-# Java Problems
-echo '_JAVA_AWT_WM_NONREPARENTING=1' | sudo tee -a /etc/environment
-
-# GTK theme for Qt
-echo 'QT_QPA_PLATFORMTHEME=qt5ct' | sudo tee -a /etc/environment
-
-# Ly Display Manager theme
-sudo chmod 0777 /lib/systemd/system/ly.service
-# Set Ly Display manager default
-systemctl enable ly.service
-
-# Set terminal default in Gnome and Cinnamon
-gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/alacritty
-gsettings set org.cinnamon.desktop.default-applications.terminal exec /usr/bin/alacritty
-
-# Volume initialize in 100%
-pactl set-sink-volume @DEFAULT_SINK@ 100%
-
-# Set colors all
-~/.GTK-configs/Nord.sh
-
-# detects Dual Boot in grub
-echo "GRUB_DISABLE_OS_PROBER=false" | sudo tee -a /etc/default/grub
-sudo grub-mkconfig -o /boot/grub/grub.cfg
-
-# Soluction:
-# ➜  ~ sudo visudo
-# visudo: no editor found (editor path = /usr/bin/vi)
-sudo ln -s $(which nvim) /usr/bin/vi
-
-# wallpapers dir for nitrogen
-echo "dirs=/home/$(whoami)/Imágenes/Wallpapers;" >> ~/.config/nitrogen/nitrogen.cfg
+# Execute main function
+main
