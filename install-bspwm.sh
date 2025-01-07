@@ -38,14 +38,14 @@ install_base() {
 
 # Main dependencies (actualizadas según tu script original)
 DEPENDENCIES=(
-    base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq 
+    archlinux-wallpaper base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq 
     jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib 
     papirus-icon-theme physlock picom playerctl polybar polkit-gnome python-gobject ranger 
     redshift rofi rustup sxhkd tmux ttf-inconsolata ttf-jetbrains-mono ttf-jetbrains-mono-nerd 
     ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs 
     xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot 
     xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting 
-    zsh-completions zinit fzf reflector eww udisks2 udiskie nitrogen pywalfox
+    zsh-completions zinit fzf reflector eww udisks2 udiskie nitrogen pywalfox xsettingsd 
 )
 
 # Install all dependencies
