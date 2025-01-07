@@ -46,6 +46,7 @@ DEPENDENCIES=(
     xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot 
     xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting 
     zsh-completions zinit fzf reflector eww udisks2 udiskie nitrogen pywalfox xsettingsd zip 
+    gtk-engines wal
 )
 
 # Install all dependencies
@@ -164,6 +165,11 @@ setup_pywal() {
     mkdir -p "$HOME/.config/dunst/"
     ln -s "$HOME/.cache/wal/dunstrc" "$HOME/.config/dunst/dunstrc"
     wal --theme Dracula
+
+    # Oomox install (themes GTK generator)
+    cd ~/ && git clone https://github.com/themix-project/oomox.git --recursive
+    cd ~/oomox && make -f po.mk install
+    mv ~/oomox/ ~/.oomox
 }
 
 # Setup environment
