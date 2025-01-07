@@ -99,8 +99,7 @@ setup_configs() {
         "$HOME"/.fonts \
         "$HOME"/.icons \
         "$HOME"/.themes \
-        "$HOME"/.GTK-configs \ 
-        "$HOME/Imágenes/Wallpapers"
+        "$HOME"/.GTK-configs 
 
     # Copy configurations
     cp -r config/* "$HOME"/.config/
