@@ -19,11 +19,11 @@ configuration {
 //----- Global Properties -----//
 
 * {
-font: "JetBrainsMono NF Bold 9";
-background: #1A1B26;
-background-alt: #1A1B26E0;
+font: "Terminess Nerd Font Mono Bold 10";
+background: #1D1F28;
+background-alt: #1D1F28E0;
 foreground: #c0caf5;
-selected: #7aa2f7;
+selected: #6C77BB;
 }
 
 //----- Main Window -----//
@@ -70,7 +70,7 @@ inputbar {
     spacing:                     10px;
     padding:                     50px 100px;
     background-color:            transparent;
-    background-image:            url("~/.config/bspwm/rices/emilia/rofi.webp", width);
+    background-image:            url("~/.config/bspwm/rices//rofi.webp", width);
     text-color:                  @foreground;
     orientation:                 horizontal;
     children:                    [ "textbox-prompt-colon", "entry" ];

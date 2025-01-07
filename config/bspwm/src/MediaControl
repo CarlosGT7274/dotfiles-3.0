@@ -23,82 +23,19 @@ bkpCover=~/.config/bspwm/assets/fallback.webp
 # mpd music directory for mpd clients.
 mpddir=~/Music
 
-case $Control in
-    MPD)
+
         case $1 in
             --next)
-                mpc -q next
+                playerctl next
                 ;;
             --previous)
-                mpc -q prev
+                playerctl previous
                 ;;
             --toggle)
-                mpc -q toggle
+                playerctl play-pause
                 ;;
             --stop)
-                mpc -q stop
-                ;;
-            --title)
-                title=$(mpc -f %title% current)
-                echo "${title:-Play Something}"
-                ;;
-            --artist)
-                artist=$(mpc -f %artist% current)
-                echo "${artist:-No Artist}"
-                ;;
-            --status)
-                status=$(mpc status | head -2 | tail -1 | cut -c2-8 | sed 's/]//g' | sed 's/./\U&/')
-                echo "${status:-Stopped}"
-                ;;
-            --player)
-                echo "$Control"
-                ;;
-            --cover)
-                ffmpeg -i "$mpddir"/"$(mpc current -f %file%)" "${Cover}" -y &> /dev/null || cp $bkpCover $Cover
-                echo "$Cover"
-                ;;
-            nccover)
-                ffmpeg -i "$mpddir"/"$(mpc current -f %file%)" "${Cover}" -y &> /dev/null || cp $bkpCover $Cover
-                ;;
-            --position)
-                position=$(mpc status %currenttime%)
-                echo "${position:-0:00}"
-                ;;
-            --positions)
-                positions=$(mpc status %currenttime% | awk -F: '{print ($1 * 60) + $2}')
-                echo "${positions:-0}"
-                ;;
-            --length)
-                length=$(mpc status %totaltime%)
-                echo "${length:-0:00}"
-                ;;
-            --lengths)
-                lengths=$(mpc status %totaltime% | awk -F: '{print ($1 * 60) + $2}')
-                echo "${lengths:-0}"
-                ;;
-            --shuffle)
-                shuffle=$(mpc status | sed -n '3s/.*random: \([^ ]*\).*/\1/p' | sed 's/.*/\u&/')
-                echo "${shuffle:-Off}"
-                ;;
-            --loop)
-                loop=$(mpc status | sed -n '3s/.*repeat: \([^ ]*\).*/\1/p' | sed 's/.*/\u&/')
-                echo "${loop:-Off}"
-                ;;
-        esac
-        ;;
-    *)
-        case $1 in
-            --next)
-                playerctl --player="$Control" next
-                ;;
-            --previous)
-                playerctl --player="$Control" previous
-                ;;
-            --toggle)
-                playerctl --player="$Control" play-pause
-                ;;
-            --stop)
-                playerctl --player="$Control" stop
+                playerctl stop
                 ;;
             --title)
                 title=$(playerctl --player="$Control" metadata --format "{{title}}")
@@ -149,4 +86,4 @@ case $Control in
                 echo "${loop:-None}"
                 ;;
         esac
-esac 2>/dev/null
+

@@ -45,7 +45,7 @@ DEPENDENCIES=(
     ttf-joypixels ttf-terminus-nerd ueberzug webp-pixbuf-loader xclip xdg-user-dirs 
     xdo xdotool xorg-xdpyinfo xorg-xkill xorg-xprop xorg-xrandr xorg-xsetroot 
     xorg-xwininfo zsh zsh-autosuggestions zsh-history-substring-search zsh-syntax-highlighting 
-    zsh-completions zinit fzf reflector eww udisks2 udiskie
+    zsh-completions zinit fzf reflector eww udisks2 udiskie nitrogen pywalfox
 )
 
 # Install all dependencies

@@ -1,3 +1,12 @@
+(defpoll calendar_day :interval "10h"
+	"date '+%d'")
+(defpoll calendar_month :interval "10h"
+	"date '+%m'")
+(defpoll calendar_year :interval "10h"
+	"date '+%Y'")
+
+
+
 (defwidget divider []
   (box :class "divider"
        :orientation "v"
@@ -20,12 +29,13 @@
        :orientation "v"
        :space-evenly false
     (calendar :class "cal"
-              :day {formattime(EWW_TIME, "%d")}
-              :month {formattime(EWW_TIME, "%m")}
-              :year {formattime(EWW_TIME, "%Y")}
+              :day {calendar_day ?: "1"}
+              :month {calendar_month ?: "1"}
+              :year {calendar_year ?: "2023"}
     )
   )
 )
+
 
 (defwidget date []
   (box :class "date"

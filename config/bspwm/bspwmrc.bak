@@ -22,14 +22,14 @@ export XDG_CURRENT_DESKTOP='bspwm'
 #  ║║║║ ║╠╦╝╠╩╗╚═╗╠═╝╠═╣║  ║╣ ╚═╗
 #  ╚╩╝╚═╝╩╚═╩ ╩╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
 
-INTERNAL_MONITOR=HDMI-A-0
-EXTERNAL_MONITOR=DisplayPort-0
+INTERNAL_MONITOR=DisplayPort-0
+EXTERNAL_MONITOR=HDMI-A-0
 if [[ $(xrandr -q | grep "${EXTERNAL_MONITOR} connected") ]]; then
-	bspc monitor "$EXTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6' 
-	bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
-	bspc wm -O "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
+  bspc monitor "$EXTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
+  bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
+  bspc wm -O "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
 else
-	bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
+  bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
 fi
 
 ## For two or three monitors configuration see https://github.com/gh0stzk/dotfiles/wiki/Two-or-more-monitors-setup
@@ -40,11 +40,11 @@ fi
 
 bspc config external_rules_command "$HOME"/.config/bspwm/src/ExternalRules
 
-bspc config window_gap                6
-bspc config split_ratio               0.51
-bspc config single_monocle            true
-bspc config borderless_monocle        false
-bspc config gapless_monocle           false
+bspc config window_gap 6
+bspc config split_ratio 0.51
+bspc config single_monocle true
+bspc config borderless_monocle false
+bspc config gapless_monocle false
 
 . "${HOME}/.cache/wal/colors.sh"
 bspc config normal_border_color "$color9"
@@ -52,48 +52,52 @@ bspc config active_border_color "$color9"
 bspc config focused_border_color "$color15"
 bspc config presel_feedback_color "$color9"
 
-bspc config focus_follows_pointer     true
-bspc config pointer_follows_focus     false
-bspc config pointer_motion_interval   5
-bspc config pointer_modifier          mod4
-bspc config pointer_action1           move
-bspc config pointer_action2           resize_side
-bspc config pointer_action3           resize_corner
+bspc config focus_follows_pointer true
+bspc config pointer_follows_focus false
+bspc config pointer_motion_interval 5
+bspc config pointer_modifier mod4
+bspc config pointer_action1 move
+bspc config pointer_action2 resize_side
+bspc config pointer_action3 resize_corner
 
 #bspc wm --adopt-orphans
 bspc rule -a scratch sticky=on state=floating focus=on
+#bspc rule -a FloaTerm state=floating
 
 #  ╔═╗╦ ╦╔╦╗╔═╗╔═╗╔╦╗╔═╗╦═╗╔╦╗
 #  ╠═╣║ ║ ║ ║ ║╚═╗ ║ ╠═╣╠╦╝ ║
 #  ╩ ╩╚═╝ ╩ ╚═╝╚═╝ ╩ ╩ ╩╩╚═ ╩
 
 # Set system vars for polybar
-#. SetSysVars
+. SetSysVars
+
+#pkill polybar
 
 # Terminate already running polybar, stalonetray, sxhkd and dunst instances
-processes=("sxhkd" "polybar" "dunst" "eww.*bar")
+processes=("sxhkd" "dunst" "eww.*bar")
 
 for process in "${processes[@]}"; do
-    if pgrep -f "$process"; then
-        pkill -f "$process" > /dev/null; sleep 0.25
-    fi
+  if pgrep -f "$process"; then
+    pkill -f "$process" >/dev/null
+    sleep 0.25
+  fi
 done
 
 wal -Rntq &
 
 # Reload sxhkd daemon
-sxhkd -c "$HOME"/.config/bspwm/sxhkdrc &
+sxhkd -c "$HOME"/.config/bspwm/sxhkdrc 2> "$HOME"/sxhkd.log &
 
 # Launch picom // If you have old hardware or encounter problems
 # uncomment the picom "--legacy-backends" line and comment the current one.
-pidof -q picom || { picom --config "$HOME"/.config/bspwm/picom.conf & }
-#pidof -q picom || { picom --legacy-backends --config "$HOME"/.config/bspwm/picom.conf & }
+#pidof -q picom || { picom --config "$HOME"/.config/bspwm/picom.conf & }
+pidof -q picom || { picom --legacy-backends --config "$HOME"/.config/bspwm/picom.conf & }
 
 # Launch dunst notification daemon
 dunst -config "$HOME"/.config/bspwm/dunstrc &
 
 # Launch eww daemon
-pidof -q eww || { eww -c "$HOME"/.config/bspwm/eww daemon & }
+pidof -q eww || { eww -c "$HOME"/.config/bspwm/eww daemon & }  2> "$HOME"/eww.log
 
 # Launch polkit
 pidof -q polkit-gnome-authentication-agent-1 || { /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 & }
@@ -107,6 +111,12 @@ xset s off
 xset -dpms
 xset s noblank
 
+killall -q polybar
+
+while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
+
+LOG_FILE="/tmp/polybar.log"
+
 for MONITOR in $(xrandr --query | grep " connected" | cut -d" " -f1 | tac); do
   for i in $(seq 1 6); do
     #MONITOR=$MONITOR polybar --reload varinka-bar >> /tmp/polybar.log 2>&1 &
@@ -119,3 +129,5 @@ flameshot &
 nm-applet &
 
 udiskie &
+
+#ags -c ~/.config/ags/config.js &

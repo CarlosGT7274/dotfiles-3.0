@@ -4,7 +4,7 @@
 # Author: z0mbi3
 #	url: https://github.com/gh0stzk/dotfiles
 
-cfg_term="$HOME/.config/bspwm/scripts/.term"
+cfg_term="$HOME/.config/bspwm/src/.term"
 
 if [ ! -e "$cfg_term" ]; then
     touch "$cfg_term"
@@ -22,7 +22,7 @@ ALACRITTY="Alacritty"
 KITTY="Kitty"
 
 options="$ALACRITTY\n$KITTY"
-chosen="$(echo -e "$options" | rofi -theme "$HOME"/.config/bspwm/scripts/TermSelector.rasi -dmenu)"
+chosen="$(echo -e "$options" | rofi -theme "$HOME"/.config/bspwm/src/TermSelector.rasi -dmenu)"
 	case $chosen in
 
 			"$ALACRITTY")
@@ -63,9 +63,9 @@ elif [[ "$MY_TERM" == "kitty" ]]; then
 	if [[ "$1" == "--terminal" ]]; then
 		kitty
 	elif [[ "$1" == "--floating" ]]; then
-		kitty --class=FloaTerm -o initial_window_width=842 -o initial_window_height=495
+		kitty --class=FloaTerm 
 	elif [[ "$1" == "--update" ]]; then
-		kitty --hold --class=FloaTerm -o initial_window_width=842 -o initial_window_height=495 -e Updates --update-system
+		kitty --hold --class=FloaTerm -e Updates --update-system
 	elif [[ "$1" == "--checkupdates" ]]; then
 		kitty --hold --class=Updating -o initial_window_width=457 -o initial_window_height=496 -e Updates --print-updates
 	elif [[ "$1" == "--ranger" ]]; then
