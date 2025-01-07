@@ -110,7 +110,7 @@ xset s noblank
 for MONITOR in $(xrandr --query | grep " connected" | cut -d" " -f1 | tac); do
   for i in $(seq 1 6); do
     #MONITOR=$MONITOR polybar --reload varinka-bar >> /tmp/polybar.log 2>&1 &
-    MONITOR=$MONITOR polybar -q pam$i -c ${HOME}/.config/polybar/config.ini 2> "$HOME"/polybar.log &
+    MONITOR=$MONITOR polybar -q pam$i -c ${HOME}/.config/polybar/config.ini &
   done
 done
 
