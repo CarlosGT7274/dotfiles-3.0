@@ -113,8 +113,8 @@ setup_configs() {
     mv -f .themes/* "$HOME"/.themes/
     
     # Setup wallpapers
-    mkdir -p "$(xdg-user-dir PICTURES)"/Wallpapers
-    cp -r Wallpapers/* "$(xdg-user-dir PICTURES)"/Wallpapers/
+    mkdir -p "$(xdg-user-dir Imágenes)"/Wallpapers
+    cp -r Wallpapers/* "$(xdg-user-dir Imágenes)"/Wallpapers/
     
     # Copy GTK configs
     cp -r GTK-configs/* "$HOME"/.GTK-configs/
@@ -211,8 +211,8 @@ final_setup() {
     cd "$CURRENT_DIR" || exit
     
     # Setup display manager
-    sudo chmod 0777 /lib/systemd/system/ly.service
-    systemctl enable ly.service
+    # sudo chmod 0777 /lib/systemd/system/ly.service
+    # systemctl enable ly.service
     
     # Set terminal defaults
     gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/alacritty
