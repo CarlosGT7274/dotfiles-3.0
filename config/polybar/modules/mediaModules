@@ -1,0 +1,91 @@
+
+[module/volume]
+type = custom/script
+exec = ~/.config/polybar/scripts/volume.sh
+interval = 1
+font-0 = "Material Design Icons:style=Bold:size18;4"
+
+;; _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+[module/mpd]
+type = internal/mpd
+
+interval = 2
+
+format-online = <icon-prev> <toggle> <icon-next>
+
+; format-online-background = ${color.mb}
+format-offline-foreground = ${color.grey}
+
+format-playing = ${self.format-online}
+format-paused = ${self.format-online}
+format-stopped = ${self.format-online}
+
+format-offline = <label-offline>
+format-offline-prefix = " "
+; format-offline-background = ${color.mb}
+
+label-song =  "%artist% - %title%"
+label-song-maxlen = 25
+label-song-ellipsis = true
+
+label-offline = "Offline"
+
+icon-play = 
+icon-play-font = 2
+icon-play-foreground = ${color.lime}
+icon-pause = 
+icon-pause-font = 2
+icon-pause-foreground = ${color.lime}
+icon-stop = 
+icon-stop-foreground = ${color.lime}
+icon-prev = 玲
+icon-prev-font = 1
+icon-prev-foreground = ${color.blue}
+icon-next = 怜
+icon-next-font = 1
+icon-next-foreground = ${color.blue}
+
+;;-----------
+
+[module/song]
+type = internal/mpd
+
+interval = 2
+
+format-online = "[ <icon-repeat> <label-song> ]"
+format-online-foreground = ${color.pink}
+
+format-playing = ${self.format-online}
+format-paused = ${self.format-online}
+format-stopped = ${self.format-online}
+
+label-song =  "%title% - %artist%"
+label-song-foreground = ${color.cyan}
+label-song-maxlen = 25
+label-song-ellipsis = true
+
+icon-repeat = ""
+icon-repeat-foreground = #FF0677
+
+;; _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+[module/info-cava]
+type = custom/script
+exec =  ~/.config/polybar/scripts/cava
+
+format = <label>
+label = %output%
+format-foreground = ${color.purple}
+tail = true
+
+;; _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+
+; pipewire-microphone
+[module/pip-mic]
+type = custom/script
+exec = ~/.config/polybar/scripts/pipewire-microphone.sh
+tail = true
+click-left = ~/.config/polybar/scripts/pipewire-microphone.sh --toggle &
+
+;; _-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_

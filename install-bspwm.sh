@@ -99,7 +99,8 @@ setup_configs() {
         "$HOME"/.fonts \
         "$HOME"/.icons \
         "$HOME"/.themes \
-        "$HOME"/.GTK-configs
+        "$HOME"/.GTK-configs \ 
+        "$HOME/Imágenes/Wallpapers"
 
     # Copy configurations
     cp -r config/* "$HOME"/.config/
@@ -113,8 +114,7 @@ setup_configs() {
     mv -f .themes/* "$HOME"/.themes/
     
     # Setup wallpapers
-    mkdir -p "$(xdg-user-dir Imágenes)"/Wallpapers
-    cp -r Wallpapers/* "$(xdg-user-dir Imágenes)"/Wallpapers/
+    cp -r Wallpapers/* "$HOME/Imágenes/Wallpapers/"
     
     # Copy GTK configs
     cp -r GTK-configs/* "$HOME"/.GTK-configs/
@@ -141,8 +141,17 @@ setup_pywal() {
     print_message "Setting up Pywal and related tools..." "${BLUE}"
     
     # Install Pywal and related
-    pip install PyGObject pywal pywalfox --break-system-packages
-    pywalfox install
+    pip install PyGObject pywal --break-system-packages
+    
+    # Install pywalfox if not present
+    if ! command -v pywalfox &> /dev/null; then
+        pip install pywalfox --break-system-packages
+    fi
+    
+    # Try to install pywalfox
+    if ! pywalfox install; then
+        print_message "Error al instalar pywalfox" "${RED}"
+    fi
     
     # Setup nitrogen-pywal
     ln -s "$HOME/.config/bspwm/nitrogen-pywal.sh" "$HOME/.local/bin/nitrogen-pywal.sh"
