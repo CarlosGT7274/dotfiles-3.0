@@ -7,8 +7,8 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# Get current directory
-CURRENT_DIR=$(pwd)
+# Store the script's directory path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Print colored message function
 print_message() {
@@ -31,12 +31,12 @@ install_base() {
         git clone https://aur.archlinux.org/yay.git
         cd yay || exit
         makepkg -si --noconfirm
-        cd "$CURRENT_DIR" || exit
+        cd "$SCRIPT_DIR" || exit
         rm -rf yay
     fi
 }
 
-# Main dependencies (actualizadas según tu script original)
+# Main dependencies
 DEPENDENCIES=(
     archlinux-wallpaper base-devel brightnessctl bspwm dunst feh firefox geany git alacritty imagemagick jq 
     jgmenu libwebp lsd maim mpc mpd neovim ncmpcpp npm pamixer pacman-contrib 
@@ -64,6 +64,113 @@ install_dependencies() {
     done
 }
 
+# Function to copy files and directories with robust error handling
+copy_rice_files() {
+    print_message "Copying rice files and configurations..." "${BLUE}"
+    
+    # Define all copy operations in arrays with source and destination
+    declare -A DIRECT_COPIES=(
+        ["${SCRIPT_DIR}/aliases"]="${HOME}/.aliases"
+        ["${SCRIPT_DIR}/.zshrc"]="${HOME}/.zshrc"
+        ["${SCRIPT_DIR}/xsettingsd"]="${HOME}/.xsettingsd"
+        ["${SCRIPT_DIR}/gtkrc-2.0"]="${HOME}/.gtkrc-2.0"
+        ["${SCRIPT_DIR}/tmux.conf"]="${HOME}/.tmux.conf"
+    )
+    
+    declare -A DIRECTORY_COPIES=(
+        ["${SCRIPT_DIR}/config"]="${HOME}/.config"
+        ["${SCRIPT_DIR}/cache/wal"]="${HOME}/.cache/wal"
+        ["${SCRIPT_DIR}/GTK-configs"]="${HOME}/.GTK-configs"
+    )
+    
+    # Directory for wallpapers
+    WALLPAPERS_DIR="${HOME}/Imágenes/Wallpapers"
+    
+    # Create necessary directories first
+    mkdir -p \
+        "${HOME}/.config" \
+        "${HOME}/.cache/wal" \
+        "${HOME}/.fonts" \
+        "${HOME}/.icons" \
+        "${HOME}/.themes" \
+        "${HOME}/.GTK-configs" \
+        "${WALLPAPERS_DIR}" \
+        "${HOME}/.local/share"
+    
+    # Copy direct files
+    for source in "${!DIRECT_COPIES[@]}"; do
+        dest="${DIRECT_COPIES[$source]}"
+        if [ -f "$source" ]; then
+            if cp "$source" "$dest" 2>> RiceError.log; then
+                print_message "Copied $(basename "$source") successfully!" "${GREEN}"
+            else
+                print_message "Failed to copy $(basename "$source"). Check RiceError.log" "${RED}"
+            fi
+        else
+            print_message "Source file not found: $(basename "$source")" "${YELLOW}"
+        fi
+    done
+    
+    # Copy directories
+    for source in "${!DIRECTORY_COPIES[@]}"; do
+        dest="${DIRECTORY_COPIES[$source]}"
+        if [ -d "$source" ]; then
+            if cp -r "$source"/* "$dest"/ 2>> RiceError.log; then
+                print_message "Copied $(basename "$source") directory successfully!" "${GREEN}"
+            else
+                print_message "Failed to copy $(basename "$source") directory. Check RiceError.log" "${RED}"
+            fi
+        else
+            print_message "Source directory not found: $(basename "$source")" "${YELLOW}"
+        fi
+    done
+    
+    # Extract and setup themes/icons if archives exist
+    for archive in "icons.tar.gz" "themes.tar.gz"; do
+        if [ -f "${SCRIPT_DIR}/${archive}" ]; then
+            print_message "Extracting ${archive}..." "${BLUE}"
+            if tar -xf "${SCRIPT_DIR}/${archive}" -C "${SCRIPT_DIR}" 2>> RiceError.log; then
+                target_dir=".${archive%%.tar.gz}s"  # .icons or .themes
+                if [ -d "${SCRIPT_DIR}/${target_dir}" ]; then
+                    cp -r "${SCRIPT_DIR}/${target_dir}"/* "${HOME}/${target_dir}/"
+                    print_message "${archive} extracted and copied successfully!" "${GREEN}"
+                fi
+            else
+                print_message "Failed to extract ${archive}. Check RiceError.log" "${RED}"
+            fi
+        fi
+    done
+    
+    # Copy wallpapers if directory exists
+    if [ -d "${SCRIPT_DIR}/Wallpapers" ]; then
+        if cp -r "${SCRIPT_DIR}/Wallpapers"/* "${WALLPAPERS_DIR}"/ 2>> RiceError.log; then
+            print_message "Wallpapers copied successfully!" "${GREEN}"
+        else
+            print_message "Failed to copy wallpapers. Check RiceError.log" "${RED}"
+        fi
+    fi
+
+    # Copy .local/share folders
+    LOCAL_FOLDERS=(
+        applications
+        asciiart
+        fonts
+        startup-page
+    )
+    
+    for folder in "${LOCAL_FOLDERS[@]}"; do
+        if [ -d "${SCRIPT_DIR}/misc/${folder}" ]; then
+            if cp -R "${SCRIPT_DIR}/misc/${folder}" "${HOME}/.local/share/" 2>> RiceError.log; then
+                print_message "$folder folder copied successfully!" "${GREEN}"
+            else
+                print_message "$folder folder failed to copy. Check RiceError.log" "${RED}"
+            fi
+        else
+            print_message "Source folder not found: misc/${folder}" "${YELLOW}"
+        fi
+    done
+}
+
 # Backup existing configs
 backup_configs() {
     print_message "Backing up existing configurations..." "${BLUE}"
@@ -85,45 +192,9 @@ backup_configs() {
     for config in "${CONFIGS[@]}"; do
         if [ -d "$HOME/.config/$config" ]; then
             mv "$HOME/.config/$config" "$HOME/.config/configs_backups/"
+            print_message "Backed up $config configuration" "${GREEN}"
         fi
     done
-}
-
-# Setup directories and copy configs
-setup_configs() {
-    print_message "Setting up new configurations..." "${BLUE}"
-    
-    # Create necessary directories
-    mkdir -p \
-        "$HOME"/.config \
-        "$HOME"/.cache \
-        "$HOME"/.fonts \
-        "$HOME"/.icons \
-        "$HOME"/.themes \
-        "$HOME"/.GTK-configs 
-
-    # Copy configurations
-    cp -r config/* "$HOME"/.config/
-    cp -r cache/* "$HOME"/.cache/
-    
-    # Extract and setup themes/icons
-    tar -xf icons.tar.gz
-    mv -f .icons/* "$HOME"/.icons/
-    
-    tar -xf themes.tar.gz
-    mv -f .themes/* "$HOME"/.themes/
-    
-    # Setup wallpapers
-    mkdir -p "$HOME/Imágenes/Wallpapers"
-    cp -r Wallpapers/* "$HOME/Imágenes/Wallpapers/"
-    
-    # Copy GTK configs
-    cp -r GTK-configs/* "$HOME"/.GTK-configs/
-    cp xsettingsd "$HOME"/.xsettingsd
-    cp gtkrc-2.0 "$HOME"/.gtkrc-2.0
-    
-    # Copy aliases
-    cp aliases "$HOME"/.aliases
 }
 
 # Setup Telegram theme
@@ -131,10 +202,10 @@ setup_telegram() {
     print_message "Setting up Telegram theme..." "${BLUE}"
     cd "$HOME" || exit
     git clone https://codeberg.org/thirtysixpw/walogram
-    cp "$CURRENT_DIR/constantsTelegram.tdesktop-theme" "$HOME/walogram/constants.tdesktop-theme"
+    cp "${SCRIPT_DIR}/constantsTelegram.tdesktop-theme" "$HOME/walogram/constants.tdesktop-theme"
     cd walogram || exit
     sudo make install
-    cd "$CURRENT_DIR" || exit
+    cd "$SCRIPT_DIR" || exit
 }
 
 # Setup Pywal and related
@@ -155,21 +226,25 @@ setup_pywal() {
     fi
     
     # Setup nitrogen-pywal
-    ln -s "$HOME/.config/bspwm/nitrogen-pywal.sh" "$HOME/.local/bin/nitrogen-pywal.sh"
+    mkdir -p "$HOME/.local/bin"
+    ln -sf "$HOME/.config/bspwm/nitrogen-pywal.sh" "$HOME/.local/bin/nitrogen-pywal.sh"
     
     # Setup bpytop theme
     mkdir -p "$HOME/.config/bpytop/themes/"
-    ln -s "$HOME/.cache/wal/bpytopPywal.theme" "$HOME/.config/bpytop/themes/bpytopPywal.theme"
+    ln -sf "$HOME/.cache/wal/bpytopPywal.theme" "$HOME/.config/bpytop/themes/bpytopPywal.theme"
     
     # Setup dunst theme
     mkdir -p "$HOME/.config/dunst/"
-    ln -s "$HOME/.cache/wal/dunstrc" "$HOME/.config/dunst/dunstrc"
+    ln -sf "$HOME/.cache/wal/dunstrc" "$HOME/.config/dunst/dunstrc"
     wal --theme Dracula
 
     # Oomox install (themes GTK generator)
-    cd ~/ && git clone https://github.com/themix-project/oomox.git --recursive
-    cd ~/oomox && make -f po.mk install
-    mv ~/oomox/ ~/.oomox
+    cd "$HOME" || exit
+    git clone https://github.com/themix-project/oomox.git --recursive
+    cd oomox || exit
+    make -f po.mk install
+    mv "$HOME/oomox/" "$HOME/.oomox"
+    cd "$SCRIPT_DIR" || exit
 }
 
 # Setup environment
@@ -189,9 +264,6 @@ setup_environment() {
         echo 'export PATH="$HOME/.local/bin:$PATH"'
     } >> "$HOME/.bashrc"
     
-    # Copy zshrc
-    cp ./.zshrc "$HOME/"
-    
     # Environment variables
     echo '_JAVA_AWT_WM_NONREPARENTING=1' | sudo tee -a /etc/environment
     echo 'QT_QPA_PLATFORMTHEME=qt5ct' | sudo tee -a /etc/environment
@@ -201,7 +273,7 @@ setup_environment() {
     sudo grub-mkconfig -o /boot/grub/grub.cfg
     
     # Fix for visudo
-    sudo ln -s "$(which nvim)" /usr/bin/vi
+    sudo ln -sf "$(which nvim)" /usr/bin/vi
 }
 
 # Final configurations
@@ -223,11 +295,7 @@ final_setup() {
     git clone https://aur.archlinux.org/qt6gtk2.git
     cd qt6gtk2 || exit
     makepkg -si --noconfirm
-    cd "$CURRENT_DIR" || exit
-    
-    # Setup display manager
-    # sudo chmod 0777 /lib/systemd/system/ly.service
-    # systemctl enable ly.service
+    cd "$SCRIPT_DIR" || exit
     
     # Set terminal defaults
     gsettings set org.gnome.desktop.default-applications.terminal exec /usr/bin/alacritty
@@ -240,7 +308,7 @@ final_setup() {
     "$HOME"/.GTK-configs/nitrogen-pywal.sh
     
     # Setup nitrogen
-    echo "dirs=/home/$(whoami)/Imágenes/Wallpapers;" >> "$HOME"/.config/nitrogen/nitrogen.cfg
+    echo "dirs=$HOME/Imágenes/Wallpapers;" >> "$HOME"/.config/nitrogen/nitrogen.cfg
     
     print_message "Installation completed!" "${GREEN}"
     print_message "Please logout and login to your new environment" "${YELLOW}"
@@ -253,8 +321,8 @@ main() {
     install_base
     install_dependencies
     backup_configs
+    copy_rice_files
     setup_environment
-    setup_configs
     setup_telegram
     setup_pywal
     final_setup
