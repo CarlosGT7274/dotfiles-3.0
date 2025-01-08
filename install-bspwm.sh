@@ -253,10 +253,10 @@ main() {
     install_base
     install_dependencies
     backup_configs
+    setup_environment
     setup_configs
     setup_telegram
     setup_pywal
-    setup_environment
     final_setup
 }
 
