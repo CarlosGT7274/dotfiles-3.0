@@ -237,7 +237,7 @@ final_setup() {
     pactl set-sink-volume @DEFAULT_SINK@ 100%
     
     # Set theme
-    "$HOME"/.GTK-configs/Nord.sh
+    "$HOME"/.GTK-configs/nitrogen-pywal.sh
     
     # Setup nitrogen
     echo "dirs=/home/$(whoami)/Imágenes/Wallpapers;" >> "$HOME"/.config/nitrogen/nitrogen.cfg
