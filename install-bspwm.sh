@@ -190,7 +190,7 @@ setup_environment() {
     } >> "$HOME/.bashrc"
     
     # Copy zshrc
-    cp .zshrc "$HOME/"
+    cp ./.zshrc "$HOME/"
     
     # Environment variables
     echo '_JAVA_AWT_WM_NONREPARENTING=1' | sudo tee -a /etc/environment
