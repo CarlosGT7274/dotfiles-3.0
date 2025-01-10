@@ -22,15 +22,6 @@ export XDG_CURRENT_DESKTOP='bspwm'
 #  ║║║║ ║╠╦╝╠╩╗╚═╗╠═╝╠═╣║  ║╣ ╚═╗
 #  ╚╩╝╚═╝╩╚═╩ ╩╚═╝╩  ╩ ╩╚═╝╚═╝╚═╝
 
-INTERNAL_MONITOR=HDMI-A-0
-EXTERNAL_MONITOR=DisplayPort-0
-if [[ $(xrandr -q | grep "${EXTERNAL_MONITOR} connected") ]]; then
-	bspc monitor "$EXTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6' 
-	bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
-	bspc wm -O "$EXTERNAL_MONITOR" "$INTERNAL_MONITOR"
-else
-	bspc monitor "$INTERNAL_MONITOR" -d '1' '2' '3' '4' '5' '6'
-fi
 
 ## For two or three monitors configuration see https://github.com/gh0stzk/dotfiles/wiki/Two-or-more-monitors-setup
 
@@ -107,11 +98,12 @@ xset s off
 xset -dpms
 xset s noblank
 
-for MONITOR in $(xrandr --query | grep " connected" | cut -d" " -f1 | tac); do
-  for i in $(seq 1 6); do
-    #MONITOR=$MONITOR polybar --reload varinka-bar >> /tmp/polybar.log 2>&1 &
-    MONITOR=$MONITOR polybar -q pam$i -c ${HOME}/.config/polybar/config.ini &
-  done
+MONITORS=($(xrandr -q | grep " connected" | cut -d" " -f1))
+[ ${#MONITORS[@]} -gt 1 ] && bspc wm -O "${MONITORS[@]}"
+
+for mon in "${MONITORS[@]}"; do
+    bspc monitor "$mon" -d '1' '2' '3' '4' '5' '6'
+    for i in {1..6}; do MONITOR=$mon polybar -q pam$i -c ${HOME}/.config/polybar/config.ini & done
 done
 
 flameshot &
